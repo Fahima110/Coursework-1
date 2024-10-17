@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>After School Club</title>
+    <script src="https://unpkg.com/vue@2.7.8/dist/vue.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <h1 v-text="sitename"></h1>
+
+        <div class="sort-cart-container">
+            <div class="sort-container">
+                <label for="sort">Sort by:</label>
+                <select id="sort" v-model="sortKey" @change="sortLessons" class="sort-dropdown">
+                    <option value="">Select</option>
+                    <option value="subject">Subject</option>
+                    <option value="location">Location</option>
+                    <option value="price">Price</option>
+                    <option value="availability">Availability</option>
+                </select>
+            
+                <label for="order">Order:</label>
+                <select id="order" v-model="sortOrder" @change="sortLessons" class="sort-dropdown">
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                </select>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    v-model="searchQuery" 
+                    placeholder="Search for lessons..." 
+                    @input="filterLessons"
+                    class="search-input"
+                >
+            </div>
+
+            <div class="cart-icon" @click="showCart">
+                <img src="Images/cart.webp" alt="Cart" class="cart-image">
+                <span v-if="cartCount > 0" class="cart-count">{{ cartCount }}</span>
+            </div>
+        </div>          
+
+        <div v-if="!cartVisible && !checkoutVisible" class="lesson-grid">
+            <div v-for="lesson in filteredLessons" class="lesson-card" :key="lesson.subject">
+                <figure>
+                    <img v-bind:src="lesson.images" alt="Lesson images">
+                </figure>
+                <h2 v-text="lesson.title"></h2>
+                <p>Subject: {{ lesson.subject }}</p>
+                <p>Location: {{ lesson.location }}</p>
+                <p>Price: AED{{ lesson.price }}</p>
+                <p>Availability: {{ lesson.availability }} slots</p>
+
+                <button class="add-to-cart" 
+                        @click="addToCart(lesson)" 
+                        :disabled="lesson.availability <= 0">
+                    Add to Cart
+                </button>
+                <p v-if="lesson.availability > 0 && lesson.availability <= 3">
+                    Only {{ lesson.availability }} items left!
+                </p>
+                <p v-else-if="lesson.availability === 0" style="color: red;">
+                    Out of stock!
+                </p>
+            </div>
+        </div>
+
+        <!-- Checkout page -->
+        <div v-if="cartVisible && !checkoutVisible" class="checkout-page">
+            <h2>Your Cart</h2>
+            <ul>
+                <li v-for="item in cart" :key="item.subject">
+                    {{ item.title }} - AED{{ item.price }} 
+                    <button @click="removeFromCart(item)">Remove</button>
+                    <div class="quantity-controls">
+                        <button @click="decreaseQuantity(item)" :disabled="item.quantity <= 1">-</button>
+                        <span>{{ item.quantity }}</span>
+                        <button @click="increaseQuantity(item)">+</button>
+                    </div>
+                </li>
+            </ul>
+            <p>Total: AED{{ cartTotal }}</p>
+
+            <div class="button-container">
+                <button @click="proceedToCheckout" :disabled="cart.length === 0">Proceed to Checkout</button>
+                <button @click="showCart">Continue Shopping</button>
+            </div>
+        </div>
+
+        <!-- Checkout Form -->
+        <div v-if="checkoutVisible" class="checkout-form">
+            <h2>Checkout</h2>
+            <label for="name">Name:</label>
+            <input type="text" 
+                   v-model="name" 
+                   placeholder="Enter your name" 
+                   required 
+                   @input="filterNameInput">
+            <label for="phone">Phone:</label>
+            <input type="tel" 
+                   v-model="phone" 
+                   placeholder="Enter your phone number" 
+                   required 
+                   @input="filterPhoneInput">
+
+            <button @click="submitCheckout">Submit</button>
+            <button @click="cancelCheckout">Cancel</button>
+
+            <p v-if="checkoutError" style="color: red;">{{ checkoutError }}</p>
+        </div>
+
+        <!-- Order Submitted Modal -->
+        <div v-if="orderSubmitted" class="modal">
+            <div class="modal-content">
+                <span class="close" @click="closeModal">&times;</span>
+                <h2>Order Submitted</h2>
+                <p>Thank you, {{ name }}! Your order has been placed successfully.</p>
+                <button @click="closeModal">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { lessons } from './lessons.js'; // Ensure this path is correct
+        let webstore = new Vue({
+            el: '#app',
+            data: {
+                sitename: 'After School Club',
+                lessons: lessons,
+                cart: [],
+                cartCount: 0,
+                sortKey: '',
+                sortOrder: 'asc',
+                searchQuery: '', // New property for search input
+                cartVisible: false,
+                checkoutVisible: false,
+                name: '',
+                phone: '',
+                checkoutError: '',
+                orderSubmitted: false, // Track if order is submitted
+            },
+            computed: {
+                filteredLessons() {
+                    if (!this.searchQuery) {
+                        return this.sortedLessons; // No search, return sorted lessons
+                    }
+                    const query = this.searchQuery.toLowerCase();
+                    return this.sortedLessons.filter(lesson => {
+                        return (
+                            lesson.title.toLowerCase().includes(query) ||
+                            lesson.location.toLowerCase().includes(query) ||
+                            lesson.price.toString().includes(query) ||
+                            lesson.availability.toString().includes(query)
+                        );
+                    });
+                },
+                sortedLessons() {
+                    let sortedLessons = this.lessons.slice();
+                    if (this.sortKey) {
+                        sortedLessons.sort((a, b) => {
+                            if (this.sortKey === 'price' || this.sortKey === 'availability') {
+                                return this.sortOrder === 'asc' 
+                                    ? a[this.sortKey] - b[this.sortKey] 
+                                    : b[this.sortKey] - a[this.sortKey];
+                            } else {
+                                return this.sortOrder === 'asc'
+                                    ? a[this.sortKey].localeCompare(b[this.sortKey])
+                                    : b[this.sortKey].localeCompare(a[this.sortKey]);
+                            }
+                        });
+                    }
+                    return sortedLessons;
+                },
+                cartTotal() {
+                    return this.cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
+                }
+            },
+            methods: {
+                sortLessons() {},
+                addToCart(lesson) {
+                    const existingItem = this.cart.find(cartItem => cartItem.subject === lesson.subject);
+                    if (existingItem) {
+                        if (existingItem.quantity < 5) {
+                            existingItem.quantity++;
+                            this.cartCount++;
+                            lesson.availability--;
+                        }
+                    } else {
+                        if (lesson.availability > 0) {
+                            const lessonCopy = { ...lesson, quantity: 1 };
+                            this.cart.push(lessonCopy);
+                            this.cartCount++;
+                            lesson.availability--;
+                        }
+                    }
+                },
+                removeFromCart(item) {
+                    const index = this.cart.findIndex(cartItem => cartItem.subject === item.subject);
+                    if (index !== -1) {
+                        const quantity = this.cart[index].quantity;
+                        this.cart.splice(index, 1);
+                        this.cartCount -= quantity;
+                        const lessonToRestore = this.lessons.find(lesson => lesson.subject === item.subject);
+                        if (lessonToRestore) {
+                            lessonToRestore.availability += quantity;
+                        }
+                    }
+                },
+                increaseQuantity(item) {
+                    const lesson = this.lessons.find(lesson => lesson.subject === item.subject);
+                    if (lesson && item.quantity < 5 && lesson.availability > 0) {
+                        item.quantity++;
+                        this.cartCount++;
+                        lesson.availability--;
+                    }
+                },
+                decreaseQuantity(item) {
+                    if (item.quantity > 1) {
+                        const lesson = this.lessons.find(lesson => lesson.subject === item.subject);
+                        if (lesson) {
+                            item.quantity--;
+                            this.cartCount--;
+                            lesson.availability++;
+                        }
+                    }
+                },
+                showCart() {
+                    this.cartVisible = !this.cartVisible;
+                },
+                proceedToCheckout() {
+                    if (this.cart.length === 0) {
+                        alert('Your cart is empty!');
+                    } else {
+                        this.checkoutVisible = true;
+                    }
+                },
+                submitCheckout() {
+                    // Checkout logic
+                    if (!this.name || !this.phone) {
+                        this.checkoutError = 'Please fill out all fields.';
+                        return;
+                    }
+                    this.orderSubmitted = true; // Show order submitted modal
+                    this.cart = []; // Clear the cart
+                    this.cartCount = 0; // Reset cart count
+                    this.name = ''; // Clear name input
+                    this.phone = ''; // Clear phone input
+                    this.checkoutVisible = false; // Hide checkout
+                },
+                closeModal() {
+                    this.orderSubmitted = false; // Hide order submitted modal
+                },
+                filterLessons() {
+                    // This function can be used to handle any additional search logic
+                },
+                filterNameInput() {
+                    this.checkoutError = ''; // Clear error message when input changes
+                },
+                filterPhoneInput() {
+                    this.checkoutError = ''; // Clear error message when input changes
+                },
+                cancelCheckout() {
+                    this.checkoutVisible = false; // Hide checkout
+                }
+            }
+        });
+    </script>
+</body>
+</html>

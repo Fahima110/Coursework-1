@@ -1,0 +1,445 @@
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(to right, #74ebd5, #ACB6E5); /* Background gradient */
+    color: #333;
+}
+
+#app {
+    max-width: 1200px;
+    width: 100%;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    color: #333333; 
+    font-size: 2.5em;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.sort-cart-container {
+    display: flex; /* Use flexbox for layout */
+    justify-content: space-between; /* Space items evenly */
+    align-items: center; /* Center align vertically */
+    margin-bottom: 20px; /* Space below the sort and cart */
+    width: 100%; /* Full width */
+}
+
+.sort-container {
+    display: flex; /* Ensure sorting options are in a row */
+    align-items: center; /* Center align vertically */
+}
+
+.sort-container label {
+    font-weight: bold;
+    margin-right: 10px;
+    color: #6c757d; /* Dark gray for labels */
+    font-size: 1.1em;
+}
+
+.sort-dropdown {
+    padding: 10px;
+    margin-right: 20px;
+    border-radius: 5px;
+    border: 2px solid #34495E; /* Neutral border color for dropdowns */
+    background-color: #fff; /* Background color for dropdowns */
+    color: #34495E; /* Text color for dropdowns */
+    font-size: 1em;
+    transition: border-color 0.3s;
+}
+
+.sort-dropdown:focus {
+    border-color: #FF6363; /* Highlight border when focused */
+    outline: none; /* Remove default outline */
+}
+
+.lesson-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    justify-items: center;
+    margin-top: 20px;
+}
+
+.lesson-card {
+    width: 250px;
+    border: 2px solid #34495E; /* Neutral border */
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    background-color: #fff; /* White background for contrast */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+    margin: 10px;
+    position: relative;
+    min-height: 400px; /* Ensure enough height to accommodate content */
+}
+
+.lesson-card:hover {
+    transform: scale(1.05); /* Slightly enlarge on hover */
+    box-shadow: 0px 12px 24px rgba(0, 0, 0, 0.2); /* Increase shadow size */
+}
+
+.lesson-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 12px;
+    transition: transform 0.4s ease; /* Smooth image scaling */
+}
+
+.lesson-card:hover img {
+    transform: scale(1.1); /* Enlarge the image on hover */
+}
+
+.lesson-card h2 {
+    font-size: 1.5em;
+    margin: 10px 0;
+    color: #34495E; 
+    font-weight: bold;
+}
+
+.lesson-card p {
+    margin: 5px 0;
+    font-size: 1.1em;
+    color: #7F8C8D; 
+}
+
+.lesson-card p:last-of-type {
+    color: #FF6363; 
+    font-weight: bold;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.lesson-card {
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+input, select {
+    border: 2px solid #34495E;
+    border-radius: 5px;
+    padding: 8px;
+    font-size: 1em;
+    margin: 5px 0;
+}
+
+input:focus, select:focus {
+    border-color: #FF6363; /* Border color for focus state */
+    outline: none;
+    box-shadow: 0 0 5px rgba(255, 99, 99, 0.5);
+}
+
+.add-to-cart {
+    background-color: #FF6F61; /* Coral color */
+    color: white; /* White text for contrast */
+    border: none; /* No border */
+    padding: 10px 15px; /* Padding for the button */
+    border-radius: 5px; /* Rounded corners */
+    font-size: 1em; /* Font size */
+    font-weight: bold; /* Bold text */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s, transform 0.2s; /* Smooth transitions */
+}
+
+.add-to-cart:hover {
+    background-color: #FF3B30; /* Darker coral on hover */
+    transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+.cart-icon {
+    position: relative; /* For positioning the count badge */
+    cursor: pointer; /* Change cursor to pointer on hover */
+}
+
+.cart-image {
+    width: 40px; /* Increased width for the cart icon */
+    height: 40px; /* Increased height for the cart icon */
+}
+
+.cart-count {
+    position: absolute; /* Position the count badge */
+    top: -5px; /* Adjust the position */
+    right: -10px; /* Adjust the position */
+    background-color: #FF6363; /* Background for visibility */
+    color: white; /* Text color */
+    border-radius: 50%; /* Make it round */
+    padding: 2px 5px; /* Padding around the text */
+    font-size: 12px; /* Font size for the count */
+}
+
+.cart-image:hover {
+    transform: scale(1.1); /* Slightly enlarge the icon on hover */
+}
+
+.cart h2 {
+    color: #34495E; /* Title color */
+}
+
+.cart ul {
+    list-style-type: none; /* Remove bullet points */
+    padding: 0; /* Remove padding */
+}
+
+.out-of-stock {
+    color: red; /* Change color to indicate out of stock */
+    font-weight: bold; /* Make text bold */
+    margin-top: 10px; /* Add margin to separate from the button */
+}
+
+/* Keep the add-to-cart button below the out-of-stock message */
+.lesson-card .add-to-cart {
+    margin-top: 10px; /* Add margin to separate from content */
+}
+
+/* Checkout page styling without modal */
+.checkout-page {
+    background: white; /* Background for the checkout page */
+    border: 2px solid #34495E; /* Neutral border */
+    border-radius: 10px; /* Rounded corners */
+    padding: 20px; /* Padding inside the page */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+}
+
+/* Styles for the cart list */
+.checkout-page ul {
+    list-style-type: none; /* Remove bullet points */
+    padding: 0; /* Remove padding */
+    margin: 10px 0; /* Space above and below the list */
+}
+
+/* Style for each cart item */
+.checkout-page li {
+    display: flex; /* Flexbox for alignment */
+    justify-content: space-between; /* Space between item details and remove button */
+    padding: 10px 0; /* Padding above and below each item */
+    border-bottom: 1px solid #ddd; /* Light border for separation */
+}
+
+.checkout-page button {
+    background-color: #FF6F61; /* Coral color */
+    color: white; /* White text for contrast */
+    border: none; /* No border */
+    padding: 10px 15px; /* Increased padding for better touch targets */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s; /* Smooth transitions */
+    margin-top: 10px; /* Space above the button */
+    margin-bottom: 10px; /* Space below the button */
+}
+
+/* Hover effect for buttons in the checkout */
+.checkout-page button:hover {
+    background-color: #FF3B30; /* Darker coral on hover */
+}
+
+/* Style for checkout text */
+.checkout-page p, 
+.checkout-page h2 {
+    margin-bottom: 15px; /* Space below text elements */
+}
+
+/* Flexbox for evenly spacing buttons and text */
+.checkout-page .button-container {
+    display: flex; /* Use flexbox for layout */
+    justify-content: space-between; /* Space buttons evenly */
+    margin-top: 20px; /* Space above the button container */
+}
+
+.quantity-controls {
+    display: flex; /* Use flexbox to arrange items in a row */
+    align-items: center; /* Center items vertically */
+    margin: 10px 0; /* Add some vertical spacing */
+}
+
+.quantity-controls button {
+    width: 30px; /* Set a fixed width for buttons */
+    height: 30px; /* Set a fixed height for buttons */
+    font-size: 16px; /* Adjust font size for readability */
+    margin: 0 5px; /* Add horizontal spacing between buttons */
+    border: none; /* Remove default border */
+    background-color: #FF3B30; /* Button background color */
+    color: white; /* Button text color */
+    cursor: pointer; /* Change cursor to pointer */
+    border-radius: 4px; /* Rounded corners for buttons */
+    display: flex; /* Use flexbox for centering content */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    padding: 0; /* Remove any default padding */
+}
+
+.quantity-controls button:hover {
+    background-color: #FF3B30; /* Darker color on hover */
+}
+
+.quantity-controls span {
+    font-size: 16px; /* Font size for quantity text */
+    margin: 0 5px; /* Add spacing around the quantity text */
+    min-width: 20px; /* Set a minimum width to keep it consistent */
+    text-align: center; /* Center the quantity text */
+}
+
+/* Specific styles for the Remove button to ensure even alignment */
+.remove-button {
+    width: 100px; /* Set a fixed width for consistency */
+    display: flex; /* Use flexbox for centering */
+    justify-content: center; /* Center the text */
+    align-items: center; /* Center vertically */
+}
+
+.checkout-form {
+    background: #fff; /* White background for contrast */
+    border: 2px solid #34495E; /* Neutral border */
+    border-radius: 10px; /* Rounded corners */
+    padding: 20px; /* Padding inside the form */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+    max-width: 400px; /* Maximum width for the form */
+    margin: auto; /* Center the form */
+}
+
+.checkout-form h2 {
+    color: #34495E; /* Heading color */
+    text-align: center; /* Center heading */
+    margin-bottom: 15px; /* Space below heading */
+}
+
+.checkout-form label {
+    font-weight: bold; /* Bold labels */
+    margin-top: 10px; /* Space above labels */
+    display: block; /* Block display for labels */
+    color: #6c757d; /* Dark gray for labels */
+}
+
+.checkout-form input {
+    border: 2px solid #34495E; /* Neutral border */
+    border-radius: 5px; /* Rounded corners */
+    padding: 8px; /* Padding for input fields */
+    font-size: 0.9em; /* Smaller font size */
+    width: calc(100% - 16px); /* Full width minus padding */
+    margin-bottom: 15px; /* Space below each input */
+}
+
+.checkout-form input:focus {
+    border-color: #FF6363; /* Border color on focus */
+    outline: none; /* Remove default outline */
+}
+
+.checkout-form button {
+    background-color: #FF6F61; /* Coral color */
+    color: white; /* White text for contrast */
+    border: none; /* No border */
+    padding: 10px 15px; /* Increased padding */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor */
+    transition: background-color 0.3s; /* Smooth transitions */
+    width: 100%; /* Full width for buttons */
+    margin-top: 10px; /* Space above buttons */
+}
+
+.checkout-form button:hover {
+    background-color: #FF3B30; /* Darker coral on hover */
+}
+
+.checkout-form p {
+    text-align: center; /* Center error message */
+}
+
+.modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    text-align: center;
+    width: 300px;
+}
+
+.close {
+    cursor: pointer;
+    float: right;
+    font-size: 20px;
+}
+/* Modal Background */
+.modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Slightly darker background */
+    z-index: 1000;
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: #fff; /* White background for the modal */
+    padding: 20px;
+    border-radius: 10px; /* Rounded corners */
+    text-align: center;
+    width: 300px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+}
+
+/* Close Button */
+.close {
+    cursor: pointer;
+    float: right;
+    font-size: 20px;
+    color: #888; /* Gray color for close button */
+}
+
+.close:hover {
+    color: #f00; /* Red color on hover */
+}
+
+/* Modal Heading */
+.modal-content h2 {
+    color: #4CAF50; /* Green color for the heading */
+    margin-bottom: 10px;
+}
+
+/* Modal Message */
+.modal-content p {
+    color: #333; /* Darker text for better readability */
+    margin-bottom: 20px;
+}
+
+/* Modal Button */
+.modal-content button {
+    background-color: #4CAF50; /* Green background for button */
+    color: white; /* White text color */
+    border: none; /* Remove border */
+    padding: 10px 20px; /* Padding for button */
+    border-radius: 5px; /* Rounded button */
+    cursor: pointer; /* Pointer cursor */
+    transition: background-color 0.3s; /* Smooth transition */
+}
+
+.modal-content button:hover {
+    background-color: #45a049; /* Darker green on hover */
+}
+
