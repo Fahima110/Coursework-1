@@ -130,172 +130,157 @@
         import { lessons } from './lessons.js'; // Ensure this path is correct
         Vue.config.devtools = true;
         let webstore = new Vue({
-            el: '#app',
-            data: {
-                sitename: 'After School Club',
-                lessons: lessons,
-                cart: [],
-                cartCount: 0,
-                sortKey: '',
-                sortOrder: 'asc',
-                searchQuery: '', // New property for search input
-                cartVisible: false,
-                checkoutVisible: false,
-                name: '',
-                phone: '',
-                checkoutError: '',
-                orderSubmitted: false, // Track if order is submitted
-            },
-            computed: {
-                filteredLessons() {
-                    if (!this.searchQuery) {
-                        return this.sortedLessons; // No search, return sorted lessons
+    el: '#app',
+    data: {
+        sitename: 'After School Club',
+        lessons: lessons, // Ensure 'lessons.js' exports an array of lesson objects
+        cart: [],
+        cartCount: 0,
+        sortKey: '',
+        sortOrder: 'asc',
+        searchQuery: '', // For the search bar
+        cartVisible: false,
+        checkoutVisible: false,
+        name: '',
+        phone: '',
+        checkoutError: '',
+        orderSubmitted: false, // Track if the order is submitted
+    },
+    computed: {
+        filteredLessons() {
+            // Combine search and sorting
+            let filtered = this.lessons;
+
+            // Apply search filter
+            if (this.searchQuery) {
+                const query = this.searchQuery.toLowerCase();
+                filtered = filtered.filter(lesson =>
+                    lesson.title.toLowerCase().includes(query) ||
+                    lesson.location.toLowerCase().includes(query) ||
+                    lesson.price.toString().includes(query) ||
+                    lesson.availability.toString().includes(query)
+                );
+            }
+
+            // Apply sorting
+            if (this.sortKey) {
+                filtered = filtered.slice().sort((a, b) => {
+                    if (['price', 'availability'].includes(this.sortKey)) {
+                        return this.sortOrder === 'asc'
+                            ? a[this.sortKey] - b[this.sortKey]
+                            : b[this.sortKey] - a[this.sortKey];
+                    } else {
+                        return this.sortOrder === 'asc'
+                            ? a[this.sortKey].localeCompare(b[this.sortKey])
+                            : b[this.sortKey].localeCompare(a[this.sortKey]);
                     }
-                    const query = this.searchQuery.toLowerCase();
-                    return this.sortedLessons.filter(lesson => {
-                        return (
-                            lesson.title.toLowerCase().includes(query) ||
-                            lesson.location.toLowerCase().includes(query) ||
-                            lesson.price.toString().includes(query) ||
-                            lesson.availability.toString().includes(query)
-                        );
-                    });
-                },
-                sortedLessons() {
-                    let sortedLessons = this.lessons.slice();
-                    if (this.sortKey) {
-                        sortedLessons.sort((a, b) => {
-                            if (this.sortKey === 'price' || this.sortKey === 'availability') {
-                                return this.sortOrder === 'asc' 
-                                    ? a[this.sortKey] - b[this.sortKey] 
-                                    : b[this.sortKey] - a[this.sortKey];
-                            } else {
-                                return this.sortOrder === 'asc'
-                                    ? a[this.sortKey].localeCompare(b[this.sortKey])
-                                    : b[this.sortKey].localeCompare(a[this.sortKey]);
-                            }
-                        });
-                    }
-                    return sortedLessons;
-                },
-                cartTotal() {
-                    return this.cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
+                });
+            }
+
+            return filtered;
+        },
+        cartTotal() {
+            return this.cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
+        }
+    },
+    methods: {
+        async fetchSearchResults(query) {
+            try {
+                if (!query) {
+                    return; // Don't make a request if query is empty
                 }
-            },
-            methods: {
-                fetchSearchResults() {
-                    // Check if there's any search query
-                    if (this.searchQuery.length > 0) {
-                        fetch(`/search?query=${this.searchQuery}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                this.filteredLessons = data; // Update with search results
-                            })
-                            .catch(error => console.error("Error fetching search results:", error));
-                    } else {
-                        this.filteredLessons = this.lessons; // Reset if no query
-                    }
-                },
-                filterLessons() {
-                    // Dynamically call search function on input
-                    this.fetchSearchResults();
-                },
-                sortLessons() {},
-                addToCart(lesson) {
-                    const existingItem = this.cart.find(cartItem => cartItem.subject === lesson.subject);
-                    if (existingItem) {
-                        if (existingItem.quantity < 5) {
-                            existingItem.quantity++;
-                            this.cartCount++;
-                            lesson.availability--;
-                        }
-                    } else {
-                        if (lesson.availability > 0) {
-                            const lessonCopy = { ...lesson, quantity: 1 };
-                            this.cart.push(lessonCopy);
-                            this.cartCount++;
-                            lesson.availability--;
-                        }
-                    }
-                },
-                removeFromCart(item) {
-                    const index = this.cart.findIndex(cartItem => cartItem.subject === item.subject);
-                    if (index !== -1) {
-                        const quantity = this.cart[index].quantity;
-                        this.cart.splice(index, 1);
-                        this.cartCount -= quantity;
-
-                        const lessonToRestore = this.lessons.find(lesson => lesson.subject === item.subject);
-                        if (lessonToRestore) {
-                            lessonToRestore.availability += quantity;
-                        }
-
-                        // Reload the page if the cart is empty
-                        if (this.cartCount === 0) {
-                            location.reload();
-                        }
-                    }
-                },
-                increaseQuantity(item) {
-                    const lesson = this.lessons.find(lesson => lesson.subject === item.subject);
-                    if (lesson && item.quantity < 5 && lesson.availability > 0) {
-                        item.quantity++;
-                        this.cartCount++;
-                        lesson.availability--;
-                    }
-                },
-                decreaseQuantity(item) {
-                    if (item.quantity > 1) {
-                        const lesson = this.lessons.find(lesson => lesson.subject === item.subject);
-                        if (lesson) {
-                            item.quantity--;
-                            this.cartCount--;
-                            lesson.availability++;
-                        }
-                    }
-                },
-                showCart() {
-                    this.cartVisible = !this.cartVisible;
-                    this.checkoutVisible = false; // Ensure checkout is hidden when showing cart
-                },
-                proceedToCheckout() {
-                    if (this.cart.length === 0) {
-                        alert('Your cart is empty!');
-                    } else {
-                        this.checkoutVisible = true;
-                    }
-                },
-                submitCheckout() {
-                    // Checkout logic
-                    if (!this.name || !this.phone) {
-                        this.checkoutError = 'Please fill out all fields.';
-                        return;
-                    }
-                    // Only show orderSubmitted modal after checkout
-                    this.orderSubmitted = true; // Show order submitted modal
-                    this.cart = []; // Clear the cart
-                    this.cartCount = 0; // Reset cart count
-                    this.name = ''; // Clear name input
-                    this.phone = ''; // Clear phone input
-                    this.checkoutVisible = false; // Hide checkout
-                },
-                closeModal() {
-                    this.orderSubmitted = false; // Hide order submitted modal
-                },
-                filterLessons() {
-                    // This function can be used to handle any additional search logic
-                },
-                filterNameInput() {
-                    this.checkoutError = ''; // Clear error message when input changes
-                },
-                filterPhoneInput() {
-                    this.checkoutError = ''; // Clear error message when input changes
-                },
-                cancelCheckout() {
-                    this.checkoutVisible = false; // Hide checkout
+                const response = await fetch(`http://localhost:3000/search?query=${query}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const data = await response.json(); // Parse JSON
+                console.log(data);
+                this.searchResults = data; // Assuming you have a searchResults data property
+            } catch (error) {
+                console.error("Error fetching search results:", error);
+                this.searchResults = []; // Fallback to an empty list if an error occurs
+            }
+        },
+        filterLessons() {
+            if (this.searchQuery) {
+                this.fetchSearchResults(this.searchQuery);
+            }
+        },
+        sortLessons() {
+            // No additional logic needed since sorting happens in filteredLessons
+        },
+        addToCart(lesson) {
+            const existingItem = this.cart.find(item => item.title === lesson.title);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                this.cart.push({ ...lesson, quantity: 1 });
+            }
+            lesson.availability--;
+            this.cartCount++;
+        },
+        removeFromCart(item) {
+            const index = this.cart.indexOf(item);
+            if (index !== -1) {
+                this.cart.splice(index, 1);
+                this.cartCount -= item.quantity;
+            }
+        },
+        increaseQuantity(item) {
+            const lesson = this.lessons.find(lesson => lesson.subject === item.subject);
+            if (lesson && item.quantity < 5 && lesson.availability > 0) {
+                item.quantity++;
+                this.cartCount++;
+                lesson.availability--;
+            }
+        },
+        decreaseQuantity(item) {
+            if (item.quantity > 1) {
+                item.quantity--;
+                this.cartCount--;
+                const lesson = this.lessons.find(lesson => lesson.subject === item.subject);
+                if (lesson) {
+                    lesson.availability++;
                 }
             }
-        });
-    </script>
+        },
+        showCart() {
+            this.cartVisible = !this.cartVisible;
+        },
+        proceedToCheckout() {
+            this.cartVisible = false;
+            this.checkoutVisible = true;
+        },
+        submitCheckout() {
+            if (this.name && this.phone) {
+                // Simulate order submission
+                this.orderSubmitted = true; // This will trigger the modal to show
+                this.checkoutVisible = false; // Hide the checkout form
+
+                // Empty the cart after submitting the order
+                this.cart = [];
+                this.cartCount = 0;
+            } else {
+                this.checkoutError = 'Please fill in all required fields.';
+            }
+        },
+        cancelCheckout() {
+            this.checkoutVisible = false;
+            this.cartVisible = true;
+        },
+        closeModal() {
+            this.orderSubmitted = false;
+            this.name = ''; // Reset the name field
+            this.phone = ''; // Reset the phone field
+        },
+        filterPhoneInput() {
+            this.phone = this.phone.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+        },
+        filterNameInput() {
+            this.name = this.name.replace(/[^a-zA-Z ]/g, ''); // Allow only letters and spaces
+        }
+    }
+});
+</script>    
 </body>
-</html> 
+</html>
