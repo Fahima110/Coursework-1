@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+check in this code and write "added reload after cart is empty" <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -40,11 +40,11 @@
                 >
             </div>
 
-            <div class="cart-icon" @click="showCart">
+            <div class="cart-icon" :class="{ disabled: cartCount === 0 }" @click="cartCount > 0 && showCart()">
                 <img src="Images/cart.webp" alt="Cart" class="cart-image">
                 <span v-if="cartCount > 0" class="cart-count">{{ cartCount }}</span>
-            </div>
-        </div>          
+            </div>                           
+        </div>    
 
         <div v-if="!cartVisible && !checkoutVisible" class="lesson-grid">
             <div v-for="lesson in filteredLessons" class="lesson-card" :key="lesson.subject">
@@ -182,6 +182,23 @@
                 }
             },
             methods: {
+                fetchSearchResults() {
+                    // Check if there's any search query
+                    if (this.searchQuery.length > 0) {
+                        fetch(`/search?query=${this.searchQuery}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                this.filteredLessons = data; // Update with search results
+                            })
+                            .catch(error => console.error("Error fetching search results:", error));
+                    } else {
+                        this.filteredLessons = this.lessons; // Reset if no query
+                    }
+                },
+                filterLessons() {
+                    // Dynamically call search function on input
+                    this.fetchSearchResults();
+                },
                 sortLessons() {},
                 addToCart(lesson) {
                     const existingItem = this.cart.find(cartItem => cartItem.subject === lesson.subject);
@@ -206,9 +223,15 @@
                         const quantity = this.cart[index].quantity;
                         this.cart.splice(index, 1);
                         this.cartCount -= quantity;
+
                         const lessonToRestore = this.lessons.find(lesson => lesson.subject === item.subject);
                         if (lessonToRestore) {
                             lessonToRestore.availability += quantity;
+                        }
+
+                        // Reload the page if the cart is empty
+                        if (this.cartCount === 0) {
+                            location.reload();
                         }
                     }
                 },
@@ -232,6 +255,7 @@
                 },
                 showCart() {
                     this.cartVisible = !this.cartVisible;
+                    this.checkoutVisible = false; // Ensure checkout is hidden when showing cart
                 },
                 proceedToCheckout() {
                     if (this.cart.length === 0) {
@@ -246,6 +270,7 @@
                         this.checkoutError = 'Please fill out all fields.';
                         return;
                     }
+                    // Only show orderSubmitted modal after checkout
                     this.orderSubmitted = true; // Show order submitted modal
                     this.cart = []; // Clear the cart
                     this.cartCount = 0; // Reset cart count
