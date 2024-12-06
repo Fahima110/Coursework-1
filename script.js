@@ -6,7 +6,7 @@ const fs = require('fs');
 const Lesson = require('./subjects');  // Import the Lesson model
 
 const app = express();
-const port = 3000;
+const port = 4000;
 
 // Use CORS and JSON parsing middleware
 app.use(cors());
