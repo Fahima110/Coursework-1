@@ -14,7 +14,7 @@
         <div class="sort-cart-container">
             <div class="sort-container">
                 <label for="sort">Sort by:</label>
-                <select id="sort" v-model="sortKey" @change="sortLessons" class="sort-dropdown">
+                <select id="sort" v-model="sortKey" @change="sortLessons" class="sort-dropdown" :disabled="cartVisible || checkoutVisible">
                     <option value="">Select</option>
                     <option value="subject">Subject</option>
                     <option value="location">Location</option>
@@ -23,7 +23,7 @@
                 </select>
             
                 <label for="order">Order:</label>
-                <select id="order" v-model="sortOrder" @change="sortLessons" class="sort-dropdown">
+                <select id="order" v-model="sortOrder" @change="sortLessons" class="sort-dropdown" :disabled="cartVisible || checkoutVisible">
                     <option value="asc">Ascending</option>
                     <option value="desc">Descending</option>
                 </select>
@@ -37,7 +37,8 @@
                     placeholder="Search for lessons..." 
                     @input="filterLessons"
                     class="search-input"
-                >
+                    :disabled="cartVisible || checkoutVisible"
+                 >
             </div>
 
             <div class="cart-icon" :class="{ disabled: cartCount === 0 }" @click="cartCount > 0 && showCart()">
