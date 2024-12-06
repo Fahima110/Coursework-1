@@ -38,14 +38,14 @@
                     @input="filterLessons"
                     class="search-input"
                     :disabled="cartVisible || checkoutVisible"
-                 >
+                >
             </div>
 
             <div class="cart-icon" :class="{ disabled: cartCount === 0 }" @click="cartCount > 0 && showCart()">
                 <img src="Images/cart.webp" alt="Cart" class="cart-image">
                 <span v-if="cartCount > 0" class="cart-count">{{ cartCount }}</span>
             </div>                           
-        </div>  
+        </div>    
 
         <div v-if="!cartVisible && !checkoutVisible" class="lesson-grid">
             <div v-for="lesson in filteredLessons" class="lesson-card" :key="lesson.subject">
@@ -131,145 +131,171 @@
         import { lessons } from './lessons.js'; // Ensure this path is correct
         Vue.config.devtools = true;
         let webstore = new Vue({
-            el: '#app',
-            data: {
-                sitename: 'After School Club',
-                lessons: lessons, // Ensure 'lessons.js' exports an array of lesson objects
-                cart: [],
-                cartCount: 0,
-                sortKey: '',
-                sortOrder: 'asc',
-                searchQuery: '', // For the search bar
-                cartVisible: false,
-                checkoutVisible: false,
-                name: '',
-                phone: '',
-                checkoutError: '',
-                orderSubmitted: false, // Track if the order is submitted
-            },
-            computed: {
-                filteredLessons() {
-                    // Combine search and sorting
-                    let filtered = this.lessons;
-    
-                    // Apply search filter
-                    if (this.searchQuery) {
-                        const query = this.searchQuery.toLowerCase();
-                        filtered = filtered.filter(lesson =>
-                            lesson.title.toLowerCase().includes(query) ||
-                            lesson.location.toLowerCase().includes(query) ||
-                            lesson.price.toString().includes(query) ||
-                            lesson.availability.toString().includes(query)
-                        );
-                    }
-    
-                    // Apply sorting
-                    if (this.sortKey) {
-                        filtered = filtered.slice().sort((a, b) => {
-                            if (['price', 'availability'].includes(this.sortKey)) {
-                                return this.sortOrder === 'asc'
-                                    ? a[this.sortKey] - b[this.sortKey]
-                                    : b[this.sortKey] - a[this.sortKey];
-                            } else {
-                                return this.sortOrder === 'asc'
-                                    ? a[this.sortKey].localeCompare(b[this.sortKey])
-                                    : b[this.sortKey].localeCompare(a[this.sortKey]);
-                            }
-                        });
-                    }
-    
-                    return filtered;
-                },
-                cartTotal() {
-                    return this.cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
-                }
-            },
-            methods: {
-                addToCart(lesson) {
-                    const existingItem = this.cart.find(item => item.title === lesson.title);
-                    if (existingItem) {
-                        existingItem.quantity++;
-                    } else {
-                        this.cart.push({ ...lesson, quantity: 1 });
-                    }
-                    lesson.availability--;
-                    this.cartCount++;
-                },
-                removeFromCart(item) {
-                    const index = this.cart.indexOf(item);
-                    if (index !== -1) {
-                        this.cart.splice(index, 1);
-                        this.cartCount -= item.quantity;
-                    }
+    el: '#app',
+    data: {
+        sitename: 'After School Club',
+        lessons: lessons, // Ensure 'lessons.js' exports an array of lesson objects
+        cart: [],
+        cartCount: 0,
+        sortKey: '',
+        sortOrder: 'asc',
+        searchQuery: '', // For the search bar
+        cartVisible: false,
+        checkoutVisible: false,
+        name: '',
+        phone: '',
+        checkoutError: '',
+        orderSubmitted: false, // Track if the order is submitted
+    },
+    computed: {
+        filteredLessons() {
+            // Combine search and sorting
+            let filtered = this.lessons;
 
-                    // Reset order status if the cart is empty
-                    if (this.cart.length === 0) {
-                        this.orderSubmitted = false; // Hide the modal
-                        localStorage.removeItem('orderSubmitted'); // Remove from localStorage
-                        window.location.reload(); // Optional: reload to reset the state
-                    }
-                },
-                increaseQuantity(item) {
-                    const lesson = this.lessons.find(lesson => lesson.subject === item.subject);
-                    if (lesson && item.quantity < 5 && lesson.availability > 0) {
-                        item.quantity++;
-                        this.cartCount++;
-                        lesson.availability--;
-                    }
-                },
-                decreaseQuantity(item) {
-                    if (item.quantity > 1) {
-                        item.quantity--;
-                        this.cartCount--;
-                        const lesson = this.lessons.find(lesson => lesson.subject === item.subject);
-                        if (lesson) {
-                            lesson.availability++;
-                        }
-                    }
-                },
-                showCart() {
-                    this.cartVisible = !this.cartVisible;
-                },
-                proceedToCheckout() {
-                    this.cartVisible = false;
-                    this.checkoutVisible = true;
-                },
-                submitCheckout() {
-                    if (this.name.trim() === '' || this.phone.trim() === '') {
-                        this.checkoutError = 'Please fill in all the required fields.';
+            // Apply search filter
+            if (this.searchQuery) {
+                const query = this.searchQuery.toLowerCase();
+                filtered = filtered.filter(lesson =>
+                    lesson.title.toLowerCase().includes(query) ||
+                    lesson.location.toLowerCase().includes(query) ||
+                    lesson.price.toString().includes(query) ||
+                    lesson.availability.toString().includes(query)
+                );
+            }
+
+            // Apply sorting
+            if (this.sortKey) {
+                filtered = filtered.slice().sort((a, b) => {
+                    if (['price', 'availability'].includes(this.sortKey)) {
+                        return this.sortOrder === 'asc'
+                            ? a[this.sortKey] - b[this.sortKey]
+                            : b[this.sortKey] - a[this.sortKey];
                     } else {
-                        this.checkoutError = '';
-                        this.orderSubmitted = true; // Show the modal
-                        localStorage.setItem('orderSubmitted', 'true'); // Store in localStorage to persist across reloads
+                        return this.sortOrder === 'asc'
+                            ? a[this.sortKey].localeCompare(b[this.sortKey])
+                            : b[this.sortKey].localeCompare(a[this.sortKey]);
                     }
-                },
-                cancelCheckout() {
-                    this.checkoutVisible = false;
-                    this.cartVisible = true;
-                },
-                filterNameInput() {
-                    // Can be expanded to sanitize or validate the name
-                },
-                filterPhoneInput() {
-                    // Can be expanded to sanitize or validate phone input
-                },
-                closeModal() {
-                    this.orderSubmitted = false;
-                    this.checkoutVisible = false;
-                    this.cartVisible = false;
-                    this.cart = [];
-                    this.cartCount = 0;
-                    localStorage.removeItem('orderSubmitted');
-                    window.location.reload(); // Optional: reload to reset the state
-                },
-            },
-            created() {
-                // Check if the order was submitted in localStorage
-                if (localStorage.getItem('orderSubmitted') === 'true') {
-                    this.orderSubmitted = true;
+                });
+            }
+
+            return filtered;
+        },
+        cartTotal() {
+            return this.cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
+        }
+    },
+    methods: {
+        async fetchSearchResults(query) {
+            try {
+                if (!query) {
+                    return; // Don't make a request if query is empty
+                }
+                const response = await fetch(`http://localhost:3000/search?query=${query}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const data = await response.json(); // Parse JSON
+                console.log(data);
+                this.searchResults = data; // Assuming you have a searchResults data property
+            } catch (error) {
+                console.error("Error fetching search results:", error);
+                this.searchResults = []; // Fallback to an empty list if an error occurs
+            }
+        },
+        filterLessons() {
+            if (this.searchQuery) {
+                this.fetchSearchResults(this.searchQuery);
+            }
+        },
+        sortLessons() {
+            // No additional logic needed since sorting happens in filteredLessons
+        },
+        addToCart(lesson) {
+            const existingItem = this.cart.find(item => item.title === lesson.title);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                this.cart.push({ ...lesson, quantity: 1 });
+            }
+            lesson.availability--;
+            this.cartCount++;
+        },
+        removeFromCart(item) {
+            const index = this.cart.indexOf(item);
+            if (index !== -1) {
+                this.cart.splice(index, 1); // Remove the item from the cart
+                this.cartCount -= item.quantity; // Adjust the cart count
+                const lesson = this.lessons.find(lesson => lesson.title === item.title);
+                if (lesson) {
+                    lesson.availability += item.quantity; // Restore availability to the lessons
                 }
             }
-        });
-    </script>
+
+            // If the cart is empty, show the main page
+            if (this.cart.length === 0) {
+                this.showMainPage();
+            }
+        },
+        showMainPage() {
+            this.checkoutVisible = false; // Hide the checkout page
+            this.cartVisible = false; // Hide the cart
+            this.orderSubmitted = false; // Ensure the modal is hidden
+        },
+        increaseQuantity(item) {
+            const lesson = this.lessons.find(lesson => lesson.subject === item.subject);
+            if (lesson && item.quantity < 5 && lesson.availability > 0) {
+                item.quantity++;
+                this.cartCount++;
+                lesson.availability--;
+            }
+        },
+        decreaseQuantity(item) {
+            if (item.quantity > 1) {
+                item.quantity--;
+                this.cartCount--;
+                const lesson = this.lessons.find(lesson => lesson.subject === item.subject);
+                if (lesson) {
+                    lesson.availability++;
+                }
+            }
+        },
+        showCart() {
+            this.cartVisible = !this.cartVisible;
+        },
+        proceedToCheckout() {
+            this.cartVisible = false;
+            this.checkoutVisible = true;
+        },
+        submitCheckout() {
+            if (this.name && this.phone) {
+                // Simulate order submission
+                this.orderSubmitted = true; // This will trigger the modal to show
+                this.checkoutVisible = false; // Hide the checkout form
+
+                // Empty the cart after submitting the order
+                this.cart = [];
+                this.cartCount = 0;
+            } else {
+                this.checkoutError = 'Please fill in all required fields.';
+            }
+        },
+        cancelCheckout() {
+            this.checkoutVisible = false;
+            this.cartVisible = true;
+        },
+        closeModal() {
+            this.orderSubmitted = false;
+            this.name = ''; // Reset the name field
+            this.phone = ''; // Reset the phone field
+        },
+        filterPhoneInput() {
+            this.phone = this.phone.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+        },
+        filterNameInput() {
+            this.name = this.name.replace(/[^a-zA-Z ]/g, ''); // Allow only letters and spaces
+        }
+    }
+});
+</script>    
 </body>
 </html>
