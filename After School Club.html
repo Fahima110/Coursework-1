@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>After School Club</title>
-    <script src="https://unpkg.com/vue@2.7.8/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.8/dist/vue.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -128,6 +128,7 @@
 
     <script type="module">
         import { lessons } from './lessons.js'; // Ensure this path is correct
+        Vue.config.devtools = true;
         let webstore = new Vue({
             el: '#app',
             data: {
@@ -297,4 +298,4 @@
         });
     </script>
 </body>
-</html>
+</html> 
