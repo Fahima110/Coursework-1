@@ -25,6 +25,7 @@ h1 {
 }
 
 .sort-cart-container {
+    position: relative;
     display: flex; /* Use flexbox for layout */
     justify-content: space-between; /* Space items evenly */
     align-items: center; /* Center align vertically */
@@ -158,45 +159,37 @@ input:focus, select:focus {
 }
 
 .cart-icon {
-    cursor: pointer;
-    opacity: 1;
-    transition: opacity 0.3s;
-}
-
-.cart-icon.disabled {
-    cursor: not-allowed;
-    pointer-events: none;
-    opacity: 0.5; /* Makes it visually disabled */
-    background: none; /* Removes background when disabled */
-}
-
-.cart-image {
-    width: 40px; /* Increased width for the cart icon */
-    height: 40px; /* Increased height for the cart icon */
+    position: relative; /* Ensure it's a positioned element */
+    display: inline-block;
 }
 
 .cart-count {
-    position: absolute; /* Position the count badge */
-    top: -5px; /* Adjust the position */
-    right: -10px; /* Adjust the position */
-    background-color: #FF6363; /* Background for visibility */
-    color: white; /* Text color */
-    border-radius: 50%; /* Make it round */
-    padding: 2px 5px; /* Padding around the text */
-    font-size: 12px; /* Font size for the count */
+    position: absolute; /* Position it relative to .cart-icon */
+    top: -5px; /* Adjust the top position to bring it closer to the top-right corner */
+    right: -5px; /* Adjust the right position to bring it closer to the corner */
+    background-color: red;
+    color: white;
+    padding: 2px 6px;
+    font-size: 14px;
+    border-radius: 50%;
+}
+
+.cart-image {
+    width: 40px;
+    height: 40px;
 }
 
 .cart-image:hover {
-    transform: scale(1.1); /* Slightly enlarge the icon on hover */
+    transform: scale(1.1);
 }
 
-.cart h2 {
-    color: #34495E; /* Title color */
+.cart-icon.disabled {
+    pointer-events: none;
+    opacity: 0.5; /* Makes it visually disabled */
 }
 
-.cart ul {
-    list-style-type: none; /* Remove bullet points */
-    padding: 0; /* Remove padding */
+.cart-count.disabled {
+    display: none;
 }
 
 .out-of-stock {
