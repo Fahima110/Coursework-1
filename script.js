@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const app = express();
 
 // Connect to MongoDB
-mongoose.connect('mongodb://atlas-sql-673df5189b6ba020bcbf8191-sgqcq.a.query.mongodb.net/myVirtualDatabase?ssl=true&authSource=admin', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect('mongodb+srv://fm837:Fsf8630110@coursework1.lqez4.mongodb.net/', { useNewUrlParser: true, useUnifiedTopology: true });
 
 // Define lesson schema
 const lessonSchema = new mongoose.Schema({
